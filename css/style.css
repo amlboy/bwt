@@ -226,14 +226,26 @@ footer a:hover {
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="password"],
-.form-group select,
-.form-group textarea {
+.form-group input[type="tel"],
+.form-group select{
     width: 100%;
     padding: 10px;
     border: 1px solid #cccccc;
     border-radius: 4px;
     font-size: 14px;
     box-sizing: border-box;
+    height: auto;
+}
+.form-group textarea {
+    width: 100%;
+    height: 150px;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    resize: none;
+    overflow-y: auto;
 }
 
 .form-group input:focus,
@@ -364,4 +376,33 @@ footer a:hover {
 .feedback-page nav a:hover,
 .feedback-page nav a.active {
     color: tomato !important;
+}
+
+.filters-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background-color: #f1eee9;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000000;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: #e2ded8;
+}
+
+.filter-btn.active {
+    background-color: tomato !important;
+    color: #ffffff !important;
 }
