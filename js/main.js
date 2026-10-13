@@ -1,4 +1,7 @@
 /* global dishes */
+const API_URL = 'https://edu.std-900.ist.mospolytech.ru/labs/api/dishes';
+
+let dishes = [];
 
 // состояние фильтров
 const activeFilters = {
@@ -68,6 +71,21 @@ function renderMenu() {
             grid.appendChild(createCardElement(dish));
         });
     });
+}
+
+// загрузка с серва
+async function loadDishes() {
+    try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+            throw new Error('ошибка сети');
+        }
+        dishes = await response.json();
+        renderMenu();
+    } catch (error) {
+        console.error(error);
+        showCustomAlert('Не удалось загрузить меню. Попробуйте позже.');
+    }
 }
 
 // добавление в корзину
@@ -221,7 +239,7 @@ function showCustomAlert(message) {
 const orderForm = document.getElementById('order-form');
 if (orderForm) {
     orderForm.addEventListener('submit', (e) => {
-        // проверка на наличие выбранных элементов 
+        // проверка на наличие выбранных эл.
         const s = currentOrder.soup !== null;
         const m = currentOrder.main !== null;
         const st = currentOrder.starter !== null;
@@ -267,6 +285,7 @@ if (orderForm) {
 document.addEventListener('DOMContentLoaded', () => {
     initFilters();
     initResetButton();
+    loadDishes();
     renderMenu();
     updateOrderDisplay();
 });
