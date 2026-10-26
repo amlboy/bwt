@@ -1,0 +1,85 @@
+.dishes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 50px;
+}
+
+.dish-card {
+    display: flex;
+    flex-direction: column;
+    padding: 30px 40px;
+    border: 2px solid transparent;
+    border-radius: 35px;
+    background-color: #ffffff;
+    filter: drop-shadow(17px 19px 24px rgba(0, 0, 0, 0.13));
+    cursor: pointer;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.dish-card:hover {
+    border: 2px solid tomato;
+}
+
+.dish-img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 15px;
+    border-radius: 35px;
+    object-fit: cover;
+}
+
+.dish-price {
+    margin-bottom: 5px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.dish-name {
+    flex-grow: 1;
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.dish-count {
+    font-size: 14px;
+    color: #888888;
+}
+
+.btn-add {
+    margin-top: 15px;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 10px;
+    background-color: #f1eee9;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000000;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.dish-card:hover .btn-add {
+    background-color: tomato;
+    color: #ffffff;
+}
+
+@media (max-width: 800px) {
+    .dishes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-section > h2 {
+        text-align: center;
+    }
+
+    .dishes-grid {
+        grid-template-columns: 1fr;
+    }
+}

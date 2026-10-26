@@ -1,0 +1,86 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.starter {
+    flex-grow: 1;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.lab-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 600px;
+}
+
+.lab-btn {
+    display: flex;
+    gap: 8px;
+    height: 100%;
+    padding: 40px 80px;
+    border: 2px solid transparent;
+    border-radius: 25px;
+    background-color: #ffffff;
+    filter: drop-shadow(10px 12px 18px rgba(0, 0, 0, 0.12));
+    text-decoration: none;
+    color: #000000;
+    transition: border-color 0.15s ease-in-out;
+    justify-content: center;
+}
+
+.lab-btn:hover {
+    border-color: tomato;
+}
+
+.lab-num {
+    font-size: 25px;
+    font-weight: 700;
+    color: tomato;
+}
+
+.starter-footer {
+    padding: 25px 20px;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.starter-footer p {
+    max-width: 960px;
+    margin: 0 auto;
+    font-size: 16px;
+}
+
+.starter-footer a {
+    text-decoration: none;
+    font-weight: 700;
+    color: white;
+}
+
+.starter-footer a:hover {
+    color: #cccccc;
+}

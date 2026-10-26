@@ -1,0 +1,255 @@
+.orders-table-wrap {
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 10px 12px;
+    border: 1px solid #000000;
+    font-size: 14px;
+    text-align: left;
+    vertical-align: middle;
+    color: #000000;
+}
+
+.orders-table th {
+    font-weight: 700;
+}
+
+.orders-table th:first-child,
+.orders-table td:first-child {
+    width: 40px;
+    text-align: center;
+}
+
+.orders-table td:nth-child(4),
+.orders-actions {
+    white-space: nowrap;
+}
+
+.action-btn {
+    padding: 4px 6px;
+    border: none;
+    background-color: transparent;
+    font-size: 18px;
+    color: #000000;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.action-btn:hover {
+    color: tomato;
+}
+
+.orders-message {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.orders-message a {
+    font-weight: 500;
+    color: tomato;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 560px;
+    max-height: 100%;
+    overflow: hidden;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    background-color: #ffffff;
+}
+
+.modal-form {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 20px;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    font-size: 28px;
+    line-height: 1;
+    color: #000000;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.modal-close:hover {
+    color: tomato;
+}
+
+.modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 20px 25px;
+    overflow-y: auto;
+}
+
+.modal-subtitle {
+    display: block;
+    margin: 20px 0 10px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.modal-row {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    align-items: center;
+    gap: 5px 15px;
+    margin-bottom: 10px;
+}
+
+.modal-label {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.modal-value,
+.modal-text {
+    overflow-wrap: anywhere;
+}
+
+.modal-radios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+}
+
+.modal-radios .radio-option {
+    margin-bottom: 0;
+}
+
+.modal .form-control {
+    width: 100%;
+}
+
+.modal-price {
+    margin-top: 15px;
+    font-weight: 700;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 25px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.modal-btn {
+    padding: 8px 25px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.modal-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.modal-btn-primary {
+    background-color: tomato;
+    color: #ffffff;
+}
+
+.modal-btn-primary:hover {
+    background-color: #e5533a;
+}
+
+.modal-btn-secondary {
+    background-color: #e0e0e0;
+    color: #000000;
+}
+
+.modal-btn-secondary:hover {
+    background-color: #cfcfcf;
+}
+
+.modal-btn-success {
+    background-color: #198754;
+    color: #ffffff;
+}
+
+.modal-btn-success:hover {
+    background-color: #146c43;
+}
+
+.modal-btn-danger {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+.modal-btn-danger:hover {
+    background-color: #b02a37;
+}
+
+@media (max-width: 600px) {
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .modal-row {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+}

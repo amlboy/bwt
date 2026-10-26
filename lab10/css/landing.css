@@ -1,0 +1,56 @@
+:root {
+    --bs-body-font-family: 'Inter', sans-serif;
+}
+
+.text-tomato {
+    color: tomato;
+}
+
+.bg-tomato {
+    background-color: tomato;
+}
+
+.btn-tomato {
+    --bs-btn-color: #ffffff;
+    --bs-btn-bg: tomato;
+    --bs-btn-border-color: tomato;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: #e5533a;
+    --bs-btn-hover-border-color: #e5533a;
+    --bs-btn-active-color: #ffffff;
+    --bs-btn-active-bg: #cc4a33;
+    --bs-btn-active-border-color: #cc4a33;
+    --bs-btn-focus-shadow-rgb: 255, 99, 71;
+}
+
+.navbar .nav-link {
+    font-weight: 500;
+    color: #000000;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+    color: tomato;
+}
+
+.hero-img {
+    max-height: 420px;
+}
+
+.feature-icon {
+    display: inline-block;
+    font-size: 40px;
+    color: tomato;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: tomato;
+    box-shadow: 0 0 0 0.25rem rgba(255, 99, 71, 0.25);
+}
+
+.form-check-input:checked {
+    border-color: tomato;
+    background-color: tomato;
+}

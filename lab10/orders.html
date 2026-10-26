@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Construct - Заказы</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/lunch.css">
+    <link rel="stylesheet" href="css/orders.css">
+</head>
+<body>
+    <header>
+        <h1>Food Construct</h1>
+        <nav class="nav-flex">
+            <a href="index.html">О нас</a>
+            <a href="lunch.html">Собрать ланч</a>
+            <a href="order.html">Оформить заказ</a>
+            <a href="orders.html" class="active">Заказы</a>
+            <a href="#contacts">Контакты</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="orders-section">
+            <h2>История заказов</h2>
+            <div class="orders-table-wrap" id="orders-table-wrap" hidden>
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Дата оформления</th>
+                            <th>Состав заказа</th>
+                            <th>Стоимость</th>
+                            <th>Время доставки</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-body"></tbody>
+                </table>
+            </div>
+            <p class="orders-message" id="orders-empty" hidden>Заказов пока нет. Чтобы оформить заказ, перейдите на страницу <a href="lunch.html">Собрать ланч</a>.</p>
+            <p class="orders-message" id="orders-error" hidden>Не удалось загрузить историю заказов.</p>
+        </section>
+    </main>
+
+    <footer id="contacts">
+        <p>Позвонить нам <a href="tel:+70000000000">+7-000-000-00-00</a></p>
+    </footer>
+
+    <div class="modal-overlay" id="view-modal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="view-title">
+            <div class="modal-header">
+                <h2 class="modal-title" id="view-title">Просмотр заказа</h2>
+                <button class="modal-close" type="button" aria-label="Закрыть" data-close="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-row">
+                    <p class="modal-label">Дата оформления</p>
+                    <p class="modal-value" id="view-created"></p>
+                </div>
+
+                <h3 class="modal-subtitle">Доставка</h3>
+                <div class="modal-row">
+                    <p class="modal-label">Имя получателя</p>
+                    <p class="modal-value" id="view-full-name"></p>
+                </div>
+                <div class="modal-row">
+                    <p class="modal-label">Адрес доставки</p>
+                    <p class="modal-value" id="view-address"></p>
+                </div>
+                <div class="modal-row">
+                    <p class="modal-label">Время доставки</p>
+                    <p class="modal-value" id="view-time"></p>
+                </div>
+                <div class="modal-row">
+                    <p class="modal-label">Телефон</p>
+                    <p class="modal-value" id="view-phone"></p>
+                </div>
+                <div class="modal-row">
+                    <p class="modal-label">Email</p>
+                    <p class="modal-value" id="view-email"></p>
+                </div>
+
+                <h3 class="modal-subtitle">Комментарий</h3>
+                <p class="modal-text" id="view-comment"></p>
+
+                <h3 class="modal-subtitle">Состав заказа</h3>
+                <div id="view-dishes"></div>
+                <p class="modal-price">Стоимость: <span id="view-price"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-primary" type="button" data-close="modal">Ок</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-modal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+            <div class="modal-header">
+                <h2 class="modal-title" id="edit-title">Редактирование заказа</h2>
+                <button class="modal-close" type="button" aria-label="Закрыть" data-close="modal">&times;</button>
+            </div>
+            <form class="modal-form" id="edit-form">
+                <div class="modal-body">
+                    <div class="modal-row">
+                        <p class="modal-label">Дата оформления</p>
+                        <p class="modal-value" id="edit-created"></p>
+                    </div>
+
+                    <h3 class="modal-subtitle">Доставка</h3>
+                    <div class="modal-row">
+                        <label class="modal-label" for="edit-full-name">Имя получателя</label>
+                        <input class="form-control" type="text" id="edit-full-name" name="full_name" required>
+                    </div>
+                    <div class="modal-row">
+                        <label class="modal-label" for="edit-address">Адрес доставки</label>
+                        <input class="form-control" type="text" id="edit-address" name="delivery_address" required>
+                    </div>
+                    <div class="modal-row" role="radiogroup" aria-labelledby="edit-type-label">
+                        <p class="modal-label" id="edit-type-label">Тип доставки</p>
+                        <div class="modal-radios">
+                            <div class="radio-option">
+                                <input class="radio-input" type="radio" id="edit-now" name="delivery_type" value="now" required>
+                                <label class="radio-label" for="edit-now">Как можно скорее</label>
+                            </div>
+                            <div class="radio-option">
+                                <input class="radio-input" type="radio" id="edit-by-time" name="delivery_type" value="by_time" required>
+                                <label class="radio-label" for="edit-by-time">Ко времени</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-row">
+                        <label class="modal-label" for="edit-time">Время доставки</label>
+                        <input class="form-control" type="time" id="edit-time" name="delivery_time" min="07:00" max="23:00" step="300">
+                    </div>
+                    <div class="modal-row">
+                        <label class="modal-label" for="edit-phone">Телефон</label>
+                        <input class="form-control" type="tel" id="edit-phone" name="phone" required>
+                    </div>
+                    <div class="modal-row">
+                        <label class="modal-label" for="edit-email">Email</label>
+                        <input class="form-control" type="email" id="edit-email" name="email" required>
+                    </div>
+
+                    <label class="modal-subtitle" for="edit-comment">Комментарий</label>
+                    <textarea class="form-control form-textarea" id="edit-comment" name="comment"></textarea>
+
+                    <h3 class="modal-subtitle">Состав заказа</h3>
+                    <div id="edit-dishes"></div>
+                    <p class="modal-price">Стоимость: <span id="edit-price"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn modal-btn-secondary" type="button" data-close="modal">Отмена</button>
+                    <button class="modal-btn modal-btn-success" type="submit">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="delete-modal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+            <div class="modal-header">
+                <h2 class="modal-title" id="delete-title">Удаление заказа</h2>
+                <button class="modal-close" type="button" aria-label="Закрыть" data-close="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-text">Вы уверены, что хотите удалить заказ?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" type="button" data-close="modal">Отмена</button>
+                <button class="modal-btn modal-btn-danger" type="button" id="delete-confirm">Да</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/orders.js"></script>
+</body>
+</html>

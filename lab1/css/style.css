@@ -1,0 +1,153 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+header {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px 20px;
+}
+
+h1 {
+    margin: 0 0 30px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+nav {
+    margin: 0;
+    padding: 0;
+}
+
+nav a {
+    margin-right: 25px;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000;
+    transition: color 0.2s ease-in-out;
+}
+
+nav a:last-child {
+    margin-right: 0;
+}
+
+nav a:hover {
+    color: tomato;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+section {
+    margin: 40px 0;
+}
+
+h2 {
+    margin: 0 0 20px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #000000;
+}
+
+.about-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 450px;
+    margin-bottom: 20px;
+    object-fit: cover;
+}
+
+.advantages-list {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.advantages-list li {
+    margin-bottom: 8px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #000000;
+}
+
+.top-table {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 15px;
+    border-collapse: collapse;
+}
+
+.top-table th,
+.top-table td {
+    padding: 12px 15px;
+    border: 1px solid #000000;
+    text-align: center;
+    font-size: 14px;
+    color: #000000;
+}
+
+.top-table th {
+    font-weight: 700;
+}
+
+.top-table td {
+    font-weight: 400;
+}
+
+.top-table th:first-child,
+.top-table td:first-child {
+    width: 40px;
+}
+
+footer {
+    margin: 0;
+    padding: 35px 20px;
+    background-color: black;
+    color: white;
+}
+
+footer p {
+    max-width: 760px;
+    margin: 0 auto;
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+}
+
+footer a {
+    margin-left: 5px;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    transition: color 0.2s ease-in-out;
+}
+
+footer a:hover {
+    color: #cccccc;
+}
