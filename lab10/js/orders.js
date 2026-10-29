@@ -1,7 +1,8 @@
 'use strict';
 
-const API_URL = window.API_CONFIG.url;
-const API_KEY = window.API_CONFIG.key;
+const MEAL_API_URL = 'https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood';
+const DRINK_API_URL = 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Non_Alcoholic';
+const HISTORY_KEY = 'food-construct-history';
 
 const DISH_FIELDS = [
     { field: 'soup_id', label: 'Суп' },
@@ -12,7 +13,6 @@ const DISH_FIELDS = [
 ];
 
 const TEXT_FIELDS = ['full_name', 'email', 'phone', 'delivery_address', 'comment'];
-
 const ASAP_TEXT = 'Как можно скорее (с 7:00 до 23:00)';
 
 let dishesById = new Map();
@@ -49,21 +49,6 @@ function showNotification(text) {
     notification.append(createTextElement('notification-text', text), button);
     document.body.append(notification);
     button.focus();
-}
-
-function ordersUrl(id) {
-    const path = id === undefined ? '/orders' : `/orders/${id}`;
-    return `${API_URL}${path}?api_key=${encodeURIComponent(API_KEY)}`;
-}
-
-async function request(url, options) {
-    const response = await fetch(url, options);
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok || (result && result.error)) {
-        throw new Error((result && result.error) || `Ошибка ${response.status}`);
-    }
-    return result;
 }
 
 function parseDate(value) {
@@ -172,30 +157,70 @@ function renderOrders(failed = false) {
     document.getElementById('orders-error').hidden = !failed;
 }
 
-async function loadOrders() {
-    const data = await request(ordersUrl());
-    orders = data.slice().sort(compareOrders);
-    renderOrders();
-}
-
-async function reloadOrders() {
+function loadLocalOrders() {
     try {
-        await loadOrders();
-    } catch (error) {
-        console.error(error);
-        showNotification(`Не удалось обновить список заказов.`);
+        const data = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        orders = data.slice().sort(compareOrders);
+        renderOrders();
+    } catch (e) {
+        orders = [];
+        renderOrders(true);
     }
 }
 
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
 async function loadPage() {
     try {
-        const [dishes, data] = await Promise.all([
-            request(`${API_URL}/dishes`),
-            request(ordersUrl())
+        const [mealsResponse, drinksResponse] = await Promise.all([
+            fetch(MEAL_API_URL),
+            fetch(DRINK_API_URL)
         ]);
-        dishesById = new Map(dishes.map((dish) => [Number(dish.id), dish]));
-        orders = data.slice().sort(compareOrders);
-        renderOrders();
+
+        if (!mealsResponse.ok || !drinksResponse.ok) {
+            throw new Error('Ошибка загрузки меню');
+        }
+
+        const mealsData = await mealsResponse.json();
+        const drinksData = await drinksResponse.json();
+        const rawDishes = [];
+        const foodCategories = ['soup', 'main', 'starter', 'dessert'];
+        const foodKinds = ['meat', 'fish', 'veg'];
+        const dessertSizes = ['small', 'medium', 'big'];
+
+        const limitedMeals = (mealsData.meals || []).slice(0, 15);
+        limitedMeals.forEach((meal, index) => {
+            const category = foodCategories[index % foodCategories.length];
+            const kind = category === 'dessert' ? dessertSizes[index % dessertSizes.length] : foodKinds[index % foodKinds.length];
+            rawDishes.push({
+                id: parseInt(meal.idMeal),
+                keyword: meal.idMeal,
+                name: meal.strMeal,
+                image: meal.strMealThumb,
+                category: category,
+                kind: kind,
+                price: getRandomInt(180, 450),
+                count: `${getRandomInt(15, 35) * 10} г`
+            });
+        });
+
+        const drinkKinds = ['hot', 'cold'];
+        const limitedDrinks = (drinksData.drinks || []).slice(0, 8);
+        limitedDrinks.forEach((drink, index) => {
+            rawDishes.push({
+                id: parseInt(drink.idDrink),
+                keyword: drink.idDrink,
+                name: drink.strDrink,
+                image: drink.strDrinkThumb,
+                category: 'drink',
+                kind: drinkKinds[index % drinkKinds.length],
+                price: getRandomInt(80, 180),
+                count: `${getRandomInt(2, 4) * 100} мл`
+            });
+        });
+
+        dishesById = new Map(rawDishes.map((dish) => [Number(dish.id), dish]));
+        loadLocalOrders();
     } catch (error) {
         console.error(error);
         orders = [];
@@ -218,16 +243,28 @@ function openModal(id) {
     document.querySelector(`#${id} .modal-close`).focus();
 }
 
-function createInfoRow(label, value) {
-    const row = document.createElement('div');
-    row.className = 'modal-row';
-    row.append(createTextElement('modal-label', label), createTextElement('modal-value', value));
-    return row;
+function createModalDishItem(label, value) {
+    const item = document.createElement('div');
+    item.className = 'modal-row';
+    
+    const labelElem = document.createElement('p');
+    labelElem.className = 'modal-label';
+    labelElem.textContent = label;
+    
+    const valueElem = document.createElement('p');
+    valueElem.className = 'modal-value';
+    valueElem.textContent = value;
+    
+    item.append(labelElem, valueElem);
+    return item;
 }
 
 function renderDishList(containerId, priceId, order) {
-    document.getElementById(containerId).replaceChildren(
-        ...getOrderDishes(order).map(({ label, dish }) => createInfoRow(
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.replaceChildren(
+        ...getOrderDishes(order).map(({ label, dish }) => createModalDishItem(
             label,
             dish ? `${dish.name} (${dish.price}₽)` : getDishName(dish)
         ))
@@ -260,7 +297,7 @@ function openEdit(order) {
         form.elements[name].value = order[name] ?? '';
     });
     form.elements.delivery_type.value = order.delivery_type;
-    form.elements.delivery_time.value = order.delivery_type === 'by_time' ? formatTime(order.delivery_time) : '';
+        form.elements.delivery_time.value = order.delivery_type === 'by_time' ? formatTime(order.delivery_time) : '';
     updateEditTime(form);
 
     renderDishList('edit-dishes', 'edit-price', order);
@@ -292,7 +329,7 @@ function getChangedFields(form, order) {
     return data;
 }
 
-async function handleEditSubmit(event) {
+function handleEditSubmit(event) {
     event.preventDefault();
 
     const form = event.target;
@@ -314,13 +351,14 @@ async function handleEditSubmit(event) {
     submitButton.disabled = true;
 
     try {
-        await request(ordersUrl(order.id), {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
+        let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        history = history.map((item) => {
+            if (item.id === order.id) {
+                return { ...item, ...data };
+            }
+            return item;
         });
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     } catch (error) {
         console.error(error);
         showNotification(`Не удалось изменить заказ.`);
@@ -331,15 +369,17 @@ async function handleEditSubmit(event) {
 
     closeModals();
     showNotification('Заказ успешно изменён');
-    await reloadOrders();
+    loadLocalOrders();
 }
 
-async function handleDelete(button) {
+function handleDelete(button) {
     const order = currentOrder;
     button.disabled = true;
 
     try {
-        await request(ordersUrl(order.id), { method: 'DELETE' });
+        let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        history = history.filter((item) => item.id !== order.id);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     } catch (error) {
         console.error(error);
         showNotification(`Не удалось удалить заказ.`);
@@ -350,7 +390,7 @@ async function handleDelete(button) {
 
     closeModals();
     showNotification('Заказ успешно удалён');
-    await reloadOrders();
+    loadLocalOrders();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

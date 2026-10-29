@@ -1,17 +1,10 @@
 'use strict';
 
-const API_URL = window.API_CONFIG.url;
-const API_KEY = window.API_CONFIG.key;
+const MEAL_API_URL = 'https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood';
+const DRINK_API_URL = 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Non_Alcoholic';
 const STORAGE_KEY = 'food-construct-order';
-
-const CATEGORY_ALIASES = {
-    'main-course': 'main',
-    main_course: 'main',
-    salad: 'starter'
-};
-const KIND_ALIASES = {
-    large: 'big'
-};
+const HISTORY_KEY = 'food-construct-history';
+const SUBMIT_URL = 'https://httpbin.org'; 
 
 const CATEGORIES = ['soup', 'main', 'starter', 'drink', 'dessert'];
 
@@ -119,22 +112,19 @@ function loadOrderIds() {
 
 function saveOrderIds() {
     const ids = {};
-
     CATEGORIES.forEach((category) => {
         if (selectedDishes[category] !== null) {
-            ids[category] = selectedDishes[category].id;
+            ids[category] = selectedDishes[category].keyword;
         }
     });
-
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
 }
 
 function restoreSelection() {
     const ids = loadOrderIds();
-
     CATEGORIES.forEach((category) => {
         selectedDishes[category] = dishes.find(
-            (dish) => dish.category === category && dish.id === ids[category]
+            (dish) => dish.category === category && dish.keyword === ids[category]
         ) ?? null;
     });
 }
@@ -142,6 +132,8 @@ function restoreSelection() {
 function renderOrderDishes() {
     const grid = document.getElementById('order-dishes');
     const empty = document.getElementById('order-dishes-empty');
+    if (!grid || !empty) return;
+
     const selected = CATEGORIES
         .map((category) => selectedDishes[category])
         .filter((dish) => dish !== null);
@@ -155,24 +147,28 @@ function updateOrderSummary() {
     const hasSelection = CATEGORIES.some((category) => selectedDishes[category] !== null);
     let total = 0;
 
-    document.getElementById('order-empty').hidden = hasSelection;
-    document.getElementById('order-total').hidden = !hasSelection;
+    const emptyTextBlock = document.getElementById('order-empty');
+    const totalTextBlock = document.getElementById('order-total');
+    
+    if (emptyTextBlock) emptyTextBlock.hidden = hasSelection;
+    if (totalTextBlock) totalTextBlock.hidden = !hasSelection;
 
     CATEGORIES.forEach((category) => {
         const dish = selectedDishes[category];
         const block = document.querySelector(`.order-category[data-category="${category}"]`);
 
-        block.hidden = !hasSelection;
-        block.querySelector('.order-dish').textContent = dish
-            ? `${dish.name} ${dish.price}₽`
-            : EMPTY_TEXT[category];
-
-        if (dish) {
-            total += dish.price;
+        if (block) {
+            block.hidden = !hasSelection;
+            block.querySelector('.order-dish').textContent = dish
+                ? `${dish.name} ${dish.price}₽`
+                : EMPTY_TEXT[category];
         }
+
+        if (dish) total += dish.price;
     });
 
-    document.getElementById('order-total-price').textContent = `${total}₽`;
+    const totalPriceElement = document.getElementById('order-total-price');
+    if (totalPriceElement) totalPriceElement.textContent = `${total}₽`;
 }
 
 function renderOrder() {
@@ -188,14 +184,11 @@ function removeDish(category) {
 
 function closeNotification() {
     const notification = document.querySelector('.notification');
-    if (notification) {
-        notification.remove();
-    }
+    if (notification) notification.remove();
 }
 
 function showNotification(text) {
     closeNotification();
-
     const notification = document.createElement('div');
     notification.className = 'notification';
     notification.setAttribute('role', 'alert');
@@ -211,27 +204,67 @@ function showNotification(text) {
     button.focus();
 }
 
-function normalizeDish(dish) {
-    return {
-        ...dish,
-        category: CATEGORY_ALIASES[dish.category] ?? dish.category,
-        kind: KIND_ALIASES[dish.kind] ?? dish.kind
-    };
-}
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 async function loadDishes() {
     try {
-        const response = await fetch(`${API_URL}/dishes`);
-        if (!response.ok) {
-            throw new Error(`Ошибка ${response.status}`);
+        const [mealsResponse, drinksResponse] = await Promise.all([
+            fetch(MEAL_API_URL),
+            fetch(DRINK_API_URL)
+        ]);
+
+        if (!mealsResponse.ok || !drinksResponse.ok) {
+            throw new Error('Ошибка загрузки данных с внешнего API');
         }
-        const data = await response.json();
-        dishes = data
-            .map(normalizeDish)
-            .filter((dish) => CATEGORIES.includes(dish.category));
+
+        const mealsData = await mealsResponse.json();
+        const drinksData = await drinksResponse.json();
+        const rawDishes = [];
+        const foodCategories = ['soup', 'main', 'starter', 'dessert'];
+        const foodKinds = ['meat', 'fish', 'veg'];
+        const dessertSizes = ['small', 'medium', 'big'];
+
+        const limitedMeals = (mealsData.meals || []).slice(0, 15);
+
+        limitedMeals.forEach((meal, index) => {
+            const category = foodCategories[index % foodCategories.length];
+            
+            const kind = category === 'dessert' 
+                ? dessertSizes[index % dessertSizes.length] 
+                : foodKinds[index % foodKinds.length];
+
+            rawDishes.push({
+                id: parseInt(meal.idMeal),
+                keyword: meal.idMeal,
+                name: meal.strMeal,
+                image: meal.strMealThumb,
+                category: category,
+                kind: kind,
+                price: getRandomInt(180, 450),
+                count: `${getRandomInt(15, 35) * 10} г`
+            });
+        });
+
+        const drinkKinds = ['hot', 'cold'];
+        const limitedDrinks = (drinksData.drinks || []).slice(0, 8);
+
+        limitedDrinks.forEach((drink, index) => {
+            rawDishes.push({
+                id: parseInt(drink.idDrink),
+                keyword: drink.idDrink,
+                name: drink.strDrink,
+                image: drink.strDrinkThumb,
+                category: 'drink',
+                kind: drinkKinds[index % drinkKinds.length],
+                price: getRandomInt(80, 180),
+                count: `${getRandomInt(2, 4) * 100} мл`
+            });
+        });
+        dishes = rawDishes;
+
     } catch (error) {
         console.error(error);
-        showNotification('Не удалось загрузить состав заказа. Попробуйте обновить страницу позже');
+        showNotification('Не удалось загрузить состав заказа. Попробуйте позже');
         return;
     }
 
@@ -253,9 +286,7 @@ function getCurrentTime() {
 
 function getDeliveryError(form) {
     const elements = form.elements;
-    if (elements.delivery_type.value !== 'by_time') {
-        return null;
-    }
+    if (elements.delivery_type.value !== 'by_time') return null;
     if (elements.delivery_time.value < getCurrentTime()) {
         return 'Время доставки не может быть раньше текущего времени';
     }
@@ -281,6 +312,8 @@ function buildOrderData(form) {
     CATEGORIES.forEach((category) => {
         if (selectedDishes[category] !== null) {
             data[ORDER_FIELDS[category]] = selectedDishes[category].id;
+        } else {
+            data[ORDER_FIELDS[category]] = null;
         }
     });
 
@@ -288,19 +321,42 @@ function buildOrderData(form) {
 }
 
 async function sendOrder(data) {
-    const response = await fetch(`${API_URL}/orders?api_key=${encodeURIComponent(API_KEY)}`, {
+    let history = [];
+    try {
+        history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+    } catch {
+        history = [];
+    }
+    
+    const now = new Date();
+    
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    const localDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    
+    const mockOrder = {
+        ...data,
+        id: history.length + 1,
+        created_at: localDateTime
+    };
+    
+    history.push(mockOrder);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+    const response = await fetch(`${SUBMIT_URL}/post`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     });
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok || result.error) {
-        throw new Error(result.error || `Ошибка ${response.status}`);
-    }
-    return result;
+    if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+    return await response.json();
 }
 
 function clearOrder(form) {
@@ -327,16 +383,14 @@ async function handleOrderSubmit(event) {
 
     try {
         await sendOrder(buildOrderData(form));
+        clearOrder(form);
+        showNotification('Заказ успешно оформлен!');
     } catch (sendError) {
         console.error(sendError);
         showNotification(`Не удалось оформить заказ. ${sendError.message}`);
-        return;
     } finally {
         submitButton.disabled = false;
     }
-
-    clearOrder(form);
-    showNotification('Заказ успешно оформлен!');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -350,16 +404,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const form = document.querySelector('.order-form');
-
     form.addEventListener('change', (event) => {
-        if (event.target.name === 'delivery_type') {
-            updateDeliveryTime(form);
-        }
+        if (event.target.name === 'delivery_type') updateDeliveryTime(form);
     });
-
     form.addEventListener('reset', () => {
         form.elements.delivery_time.required = false;
+        clearOrder(form);
     });
-
     form.addEventListener('submit', handleOrderSubmit);
 });

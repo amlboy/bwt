@@ -1,6 +1,7 @@
 'use strict';
 
-const API_URL = window.API_CONFIG.url;
+const MEAL_API_URL = 'https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood';
+const DRINK_API_URL = 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Non_Alcoholic';
 const STORAGE_KEY = 'food-construct-order';
 
 const CATEGORY_ALIASES = {
@@ -12,17 +13,9 @@ const KIND_ALIASES = {
     large: 'big'
 };
 
-const CATEGORIES = ['soup', 'main', 'starter', 'drink', 'dessert'];
-
-const ORDER_MESSAGES = {
-    nothing: 'Ничего не выбрано. Выберите блюда для заказа',
-    drink: 'Выберите напиток',
-    mainOrStarter: 'Выберите главное блюдо/салат/стартер',
-    soupOrMain: 'Выберите суп или главное блюдо',
-    main: 'Выберите главное блюдо'
-};
-
 let dishes = [];
+
+const CATEGORIES = ['soup', 'main', 'starter', 'drink', 'dessert'];
 
 const selectedDishes = {
     soup: null,
@@ -119,6 +112,14 @@ function toggleFilter(button) {
     renderCategory(category);
 }
 
+const ORDER_MESSAGES = {
+    nothing: 'Ничего не выбрано. Выберите блюда для заказа',
+    drink: 'Выберите напиток',
+    mainOrStarter: 'Выберите главное блюдо/салат/стартер',
+    soupOrMain: 'Выберите суп или главное блюдо',
+    main: 'Выберите главное блюдо'
+};
+
 function getOrderError() {
     const soup = selectedDishes.soup !== null;
     const main = selectedDishes.main !== null;
@@ -157,22 +158,19 @@ function loadOrderIds() {
 
 function saveOrderIds() {
     const ids = {};
-
     CATEGORIES.forEach((category) => {
         if (selectedDishes[category] !== null) {
-            ids[category] = selectedDishes[category].id;
+            ids[category] = selectedDishes[category].keyword;
         }
     });
-
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
 }
 
 function restoreSelection() {
     const ids = loadOrderIds();
-
     CATEGORIES.forEach((category) => {
         selectedDishes[category] = dishes.find(
-            (dish) => dish.category === category && dish.id === ids[category]
+            (dish) => dish.category === category && dish.keyword === ids[category]
         ) ?? null;
     });
 }
@@ -180,6 +178,8 @@ function restoreSelection() {
 function updateCheckoutPanel() {
     const panel = document.getElementById('checkout-panel');
     const link = document.getElementById('checkout-link');
+    if (!panel || !link) return;
+
     const selected = CATEGORIES
         .map((category) => selectedDishes[category])
         .filter((dish) => dish !== null);
@@ -228,30 +228,69 @@ function showNotification(text) {
     button.focus();
 }
 
-function normalizeDish(dish) {
-    return {
-        ...dish,
-        category: CATEGORY_ALIASES[dish.category] ?? dish.category,
-        kind: KIND_ALIASES[dish.kind] ?? dish.kind
-    };
-}
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 async function loadDishes() {
     try {
-        const response = await fetch(`${API_URL}/dishes`);
-        if (!response.ok) {
-            throw new Error(`Ошибка ${response.status}`);
+        const [mealsResponse, drinksResponse] = await Promise.all([
+            fetch(MEAL_API_URL),
+            fetch(DRINK_API_URL)
+        ]);
+
+        if (!mealsResponse.ok || !drinksResponse.ok) {
+            throw new Error('Ошибка загрузки данных с внешнего API');
         }
-        const data = await response.json();
-        dishes = data
-            .map(normalizeDish)
-            .filter((dish) => CATEGORIES.includes(dish.category));
+
+        const mealsData = await mealsResponse.json();
+        const drinksData = await drinksResponse.json();
+        const rawDishes = [];
+        const foodCategories = ['soup', 'main', 'starter', 'dessert'];
+        const foodKinds = ['meat', 'fish', 'veg'];
+        const dessertSizes = ['small', 'medium', 'big'];
+
+        const limitedMeals = (mealsData.meals || []).slice(0, 15);
+
+        limitedMeals.forEach((meal, index) => {
+            const category = foodCategories[index % foodCategories.length];
+            
+            const kind = category === 'dessert' 
+                ? dessertSizes[index % dessertSizes.length] 
+                : foodKinds[index % foodKinds.length];
+
+            rawDishes.push({
+                id: parseInt(meal.idMeal),
+                keyword: meal.idMeal,
+                name: meal.strMeal,
+                image: meal.strMealThumb,
+                category: category,
+                kind: kind,
+                price: getRandomInt(180, 450),
+                count: `${getRandomInt(15, 35) * 10} г`
+            });
+        });
+
+        const drinkKinds = ['hot', 'cold'];
+        const limitedDrinks = (drinksData.drinks || []).slice(0, 8);
+
+        limitedDrinks.forEach((drink, index) => {
+            rawDishes.push({
+                id: parseInt(drink.idDrink),
+                keyword: drink.idDrink,
+                name: drink.strDrink,
+                image: drink.strDrinkThumb,
+                category: 'drink',
+                kind: drinkKinds[index % drinkKinds.length],
+                price: getRandomInt(80, 180),
+                count: `${getRandomInt(2, 4) * 100} мл`
+            });
+        });
+        dishes = rawDishes;
+
     } catch (error) {
         console.error(error);
         showNotification('Не удалось загрузить меню. Попробуйте обновить страницу позже');
         return;
     }
-
     restoreSelection();
     CATEGORIES.forEach(renderCategory);
     updateCheckoutPanel();
